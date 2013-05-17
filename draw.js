@@ -5,11 +5,10 @@ var p_x, p_y, p_w = 100, p_h= 20, p_margin = 5
 var moveL = false, moveR = false, mouseM = false
 var paddle_shift = 10
 var xpos,ypos
+var block_layers = 3, blocks_per_layer = 10, block_width , block_height = 20, block_state, block_top_offset = 20, block_padding = 5
 
 $(document).ready(function(){
-  Init() //Initialized the event listeners
-	InitPositions()
-	console.log(x + ":" + y)
+	Init() //Initialises the event listeners
 	GameStart()
 });	
 
@@ -25,7 +24,7 @@ function InitPositions(){
 }
 
 
-function clear(){
+function Clear(){
 	context.clearRect(0,0,cwidth,cheight)
 }
 function Init(){
@@ -55,15 +54,35 @@ function Init(){
 
 	$("#reStart").click(function(){
 		clearInterval(id)
-		InitPositions()
 		GameStart()
 	})
 }
-
+function DrawBlocks(){
+	block_width = cwidth/blocks_per_layer - 2*block_padding
+	t_x = 0, t_y = block_top_offset
+	for(i = 0; i< block_layers;i+=1){
+		t_x = 0
+		for(j=0;j<blocks_per_layer;j+=1){
+			if(block_state[blocks_per_layer*i + j] == 1){
+				context.fillRect(t_x+block_padding, block_top_offset+t_y, block_width, block_height)						
+				t_x += block_padding*2 + block_width
+			}
+		}
+		t_y += block_height + block_padding
+	}
+}
+function InitBlocks(){
+	block_state = new Array(blocks_per_layer * block_layers)
+	for(i=0;i<block_layers;i+=1)
+		for(j=0;j<blocks_per_layer;j+=1)
+			block_state[blocks_per_layer*i + j] = 1
+}
 function GameStart(){
+	InitPositions()
+	InitBlocks()
 	id = setInterval(draw, interval)
 }
-function drawCircle(x,y,r){
+function DrawCircle(x,y,r){
 	context.beginPath()
 	context.arc(x,y,r,0,2 * Math.PI)
 	context.closePath()
@@ -71,15 +90,15 @@ function drawCircle(x,y,r){
 }
 
 function draw(){
-	clear()
-	drawCircle(x,y,radius)
-	drawPaddle()
+	Clear()
+	DrawCircle(x,y,radius)
+	DrawBlocks()
+	DrawPaddle()
 	//check bounds
-	
-	UpdateXY()
+	UpdateXY()//this function should check if the ball hits any of the block
 	UpdatePaddleXY()
 }
-function drawPaddle(){
+function DrawPaddle(){
 	UpdatePaddleXY()
 	context.fillRect(p_x, p_y, p_w, p_h)
 }
